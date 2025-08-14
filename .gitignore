@@ -1,0 +1,5 @@
+.env
+/myenv
+*.jpg
+*.png
+*.log
