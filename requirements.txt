@@ -1,0 +1,7 @@
+requests>=2.28.0
+python-dotenv>=0.19.0
+geocoder>=1.38.1
+Pillow>=9.0.0
+numpy>=1.21.0
+matplotlib>=3.5.0
+gps3
