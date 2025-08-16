@@ -141,32 +141,6 @@ def KrishiMitra_pipeline():
 
     return compiled_graph
 
-# def run_chatbot():
-#     graph = KrishiMitra_pipeline()
-#     session = Session()   # persistent memory
-
-#     print("🌱 Welcome to KrishiMitra! (type 'quit' to exit)\n")
-
-#     while True:
-#         user_input = input("👨‍🌾 You: ")
-#         if user_input.strip().lower() in {"quit", "exit"}:
-#             print("👋 Goodbye!")
-#             break
-
-#         # Append user input to session
-#         session.messages.append(HumanMessage(content=user_input))
-
-#         # Invoke graph WITHOUT overwriting session
-#         result = graph.invoke(session)
-
-#         # Extract AI response
-#         str_ans = result.get("response", "No response")
-
-#         # Optional: print only AIMessage content using regex
-#         ai_contents = re.findall(r"AIMessage\(content='(.*?)', additional_kwargs=", str(str_ans), re.DOTALL)
-#         for content in ai_contents:
-#             print(content.encode().decode('unicode_escape'))
-
 def run_chatbot():
     graph = KrishiMitra_pipeline()
     session = Session()
