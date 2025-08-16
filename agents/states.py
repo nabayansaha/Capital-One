@@ -6,16 +6,19 @@ from typing import Dict, Any, List
 from agents.schemas import TokenTracker, QAPair, Messages
 
 
+# ---------------- Session Schema (yours + routing/response) ----------------
 class Session(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    id: str = Field(
-        default=None, description="Unique identifier for the session" #will be used further in db
+
+    id: Optional[str] = Field(
+        default=None, description="Unique identifier for the session"
     )
     pdf_path: Optional[str] = Field(
-        default=r"Dataset/KrishiMitra.docx", description="Path to the PDF document associated with the session"
+        default=r"Dataset/KrishiMitra.docx",
+        description="Path to the document associated with the session",
     )
     ragkey: Optional[str] = Field(
-        default=None, description="Key for RAG (Retrieval-Augmented Generation) session"
+        default=None, description="Key for RAG session"
     )
     messages: Annotated[Sequence[BaseMessage], add_messages] = Field(
         default_factory=list, description="List of messages in the session"
@@ -26,8 +29,18 @@ class Session(BaseModel):
     qa_pairs: Dict[str, QAPair] = Field(
         default_factory=dict, description="Dictionary of QA pairs in the session"
     )
-    chat_history: List[Messages] = Field(default_factory=list, description="Chat history for the session"
+    chat_history: List[Messages] = Field(
+        default_factory=list, description="Chat history for the session"
     )
+
+    # 👇 Added for routing + storing the final text answer
+    next: Optional[str] = Field(
+        default=None, description="Next agent to route the query"
+    )
+    response: Optional[str] = Field(
+        default=None, description="Final response text from the selected agent"
+    )
+
 
 class CropResearchSession(Session):
     """

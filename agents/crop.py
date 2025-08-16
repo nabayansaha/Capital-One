@@ -40,7 +40,7 @@ def get_crop_data(state: Session) ->  Session:
     query = state.messages[-1].content if state.messages else "Get crop data"
     logger.info(f"Querying RAG with: {query}")
 
-    rag = RAG(session.pdf_path)
+    rag = RAG(state.pdf_path)
     index = rag.create_db()
     retriever = rag.create_retriever(index)
     rag_response = rag.rag_query(query,retriever)
@@ -91,7 +91,7 @@ def get_crop_data(state: Session) ->  Session:
         )
     )
 
-
+    state.response = final_content
     logger.info(f"Updated session state: {state}")
     return state
 

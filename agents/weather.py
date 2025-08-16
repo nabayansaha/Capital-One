@@ -41,7 +41,7 @@ def get_weather_data(state: Session, topic: Optional[str] = None) -> Session:
     # 1) Location
     location_info = get_user_location()
     if "error" in location_info:
-        final_content = f"❌ Could not determine your location: {location_info['error']}"
+        final_content = f"Could not determine your location: {location_info['error']}"
         state.messages.append(AIMessage(content=final_content))
         state.chat_history.append(
             Messages(type="ai", time=datetime.now(), content=final_content)
@@ -60,14 +60,14 @@ def get_weather_data(state: Session, topic: Optional[str] = None) -> Session:
 
         place_desc = location_info.get("city") or location_info.get("region") or "your area"
         final_content = (
-            f"🌤 Weather report for {place_desc}:\n"
+            f"Weather report for {place_desc}:\n"
             f"- Temperature: {temperature}°C\n"
             f"- Wind Speed: {windspeed} km/h\n"
             f"- Report Time (UTC): {weather_time}\n"
         )
 
     except Exception as e:
-        final_content = f"❌ Failed to fetch weather data: {str(e)}"
+        final_content = f"Failed to fetch weather data: {str(e)}"
 
     # 3) Update session
     # Save to QAPair (no LLM here, so answer1 = final, answer2 = None)
