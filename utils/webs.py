@@ -1,6 +1,5 @@
 from langchain_community.tools import TavilySearchResults
 from dotenv import load_dotenv
-import json
 
 load_dotenv()
 
@@ -13,7 +12,6 @@ class TavilySearchTool:
         include_raw_content=True,
         include_images=True,
     ):
-        load_dotenv()
         self.tool = TavilySearchResults(
             max_results=max_results,
             search_depth=search_depth,

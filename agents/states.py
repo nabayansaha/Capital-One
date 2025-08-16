@@ -11,6 +11,12 @@ class Session(BaseModel):
     id: str = Field(
         default=None, description="Unique identifier for the session" #will be used further in db
     )
+    pdf_path: Optional[str] = Field(
+        default=r"Dataset/KrishiMitra.docx", description="Path to the PDF document associated with the session"
+    )
+    ragkey: Optional[str] = Field(
+        default=None, description="Key for RAG (Retrieval-Augmented Generation) session"
+    )
     messages: Annotated[Sequence[BaseMessage], add_messages] = Field(
         default_factory=list, description="List of messages in the session"
     )
@@ -20,8 +26,7 @@ class Session(BaseModel):
     qa_pairs: Dict[str, QAPair] = Field(
         default_factory=dict, description="Dictionary of QA pairs in the session"
     )
-    chat_history: Dict[str, Messages] = Field(
-        default_factory= dict, description="Chat history for the session"
+    chat_history: List[Messages] = Field(default_factory=list, description="Chat history for the session"
     )
 
 class CropResearchSession(Session):
