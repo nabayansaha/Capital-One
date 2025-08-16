@@ -164,7 +164,7 @@ class RAG:
 
 
 if __name__ == "__main__":
-    pdf_path = "krishimitra.pdf"
+    pdf_path = r"Dataset/KrishiMitra.docx"
     logger.info(f"Starting RAG application with PDF: {pdf_path}")
     rag = RAG(pdf_path)
     index = rag.create_db()
