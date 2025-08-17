@@ -25,3 +25,4 @@ package.json
 backend/__pycache__/
 frontend/__pycache__/
 backend/chroma_db/
+*.wav
