@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -42,7 +42,7 @@ function App() {
         { type: "ai", content: data.response || "⚠️ No response" },
       ]);
     } catch (err) {
-      setMessages([
+      setMessages((prev) => [
         ...newMessages,
         { type: "ai", content: "⚠️ Error connecting to backend" },
       ]);
@@ -90,23 +90,20 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 min-h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4">🌱 KrishiMitra Chatbot</h1>
+    <div className="center-page">
+      <div className="chat-container" role="main" aria-label="Chat container">
+        <div className="chat-header">🌱 KrishiMitra Chatbot</div>
 
-      <div className="w-full max-w-lg p-4 bg-white shadow rounded-lg h-[500px] overflow-y-auto">
-        {messages.map((m, idx) => (
-          <div
-            key={idx}
-            className={`my-2 p-2 rounded-lg ${
-              m.type === "human"
-                ? "bg-green-100 text-right"
-                : "bg-blue-100 text-left"
-            }`}
-          >
-            {m.content}
-          </div>
-        ))}
-      </div>
+        <div className="messages" ref={messagesRef}>
+          {messages.map((m, idx) => (
+            <div
+              key={idx}
+              className={`message ${m.type === "human" ? "human" : "ai"}`}
+            >
+              {m.content}
+            </div>
+          ))}
+        </div>
 
         <div className="input-area">
           <input
