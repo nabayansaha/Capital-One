@@ -1,58 +1,143 @@
-from fastapi import FastAPI
+import os
+import re
+import json
+from typing import List, Dict, Any, Optional
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Any
+
 from langchain_core.messages import HumanMessage
 from agents.states import Session
 from krishimitra import KrishiMitra_pipeline
+from asr.asr import audio_to_english_transcript, english_to_original_language
+from utils.vision import ask_vlm  # VLM function
 
-# Create FastAPI app
+# ===============================
+# Initialize FastAPI & Middleware
+# ===============================
 app = FastAPI()
-
-# Allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-   allow_origins=["http://localhost:5173"],  # Change to ["http://localhost:3000"] for security
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize pipeline
+# ===============================
+# Initialize Graph & Session Store
+# ===============================
 graph = KrishiMitra_pipeline()
-sessions: Dict[str, Session] = {}  # store sessions by user_id
+sessions: Dict[str, Session] = {}
 
-
-# Request/Response Models
-class ChatRequest(BaseModel):
-    user_id: str
-    message: str
-
-
+# ===============================
+# Response Models
+# ===============================
 class ChatResponse(BaseModel):
     response: str
-    chat_history: List[Dict[str, Any]]
+    chat_history: Optional[List[Dict[str, Any]]] = None
 
-
-@app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
-    # get or create session
-    if req.user_id not in sessions:
+# ===============================
+# /chat_dynamic Endpoint
+# ===============================
+@app.post("/chat_dynamic", response_model=ChatResponse)
+async def chat_dynamic(
+    user_id: str = Form(...),
+    message: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None)
+):
+    # ----------------------
+    # Get or create session
+    # ----------------------
+    if user_id not in sessions:
         session = Session()
         session.pdf_path = "Dataset/KrishiMitra.docx"
-        sessions[req.user_id] = session
+        sessions[user_id] = session
     else:
-        session = sessions[req.user_id]
+        session = sessions[user_id]
 
-    # append user message
-    session.messages.append(HumanMessage(content=req.message))
+    original_language = "en"  # default
 
-    # invoke pipeline
+    # ----------------------
+    # Image input -> VLM
+    # ----------------------
+    if file and file.content_type.startswith("image"):
+        img_path = f"temp_{user_id}_{file.filename}"
+        with open(img_path, "wb") as f:
+            f.write(await file.read())
+
+        fixed_prompt = "Is there any anomalies in the shown crop and which crop is shown?"
+        try:
+            ai_response = ask_vlm(img_path, fixed_prompt)
+        except Exception as e:
+            ai_response = f"Error calling VLM: {e}"
+
+        os.remove(img_path)
+        return ChatResponse(response=ai_response.strip(), chat_history=[])
+
+    # ----------------------
+    # Audio input -> ASR -> English -> Graph -> Original Language
+    # ----------------------
+    if file and file.content_type.startswith("voice"):
+        # Save uploaded audio to a temp file
+        audio_path = f"temp_{user_id}_{file.filename}"
+        with open(audio_path, "wb") as f:
+            f.write(await file.read())
+
+        # Transcribe
+        asr_result = audio_to_english_transcript(audio_path)
+
+        # Clean up temp file
+        os.remove(audio_path)
+
+        # Extract transcript and detected language
+        message = asr_result["english_text"]
+        detected_lang = asr_result["detected_lang"]
+        if detected_lang and detected_lang != "en":
+            original_language = detected_lang
+
+
+    # ----------------------
+    # Text input -> Graph
+    # ----------------------
+    if message:
+        session.messages.append(HumanMessage(content=message))
+
+    # Invoke KrishiMitra graph
     result = graph.invoke(session)
-
     ai_response = result.get("response", "No response")
-    chat_history = [{"type": "human", "content": m.content} if m.type == "human" 
-                    else {"type": "ai", "content": m.content} 
-                    for m in session.messages]
 
-    return ChatResponse(response=ai_response, chat_history=chat_history)
+    # Extract actual AI content if nested in chat_history
+    match = re.search(r"chat_history=\[.*?content='(.*?)'\)", ai_response, re.DOTALL)
+    if match:
+        ai = match.group(1).replace("\\n", "\n")
+    else:
+        ai = ai_response
+
+    # Convert back to original language if needed
+    if original_language != "en":
+        try:
+            ai = english_to_original_language(ai, original_language)
+        except Exception as e:
+            ai += f"\n\n(Note: Failed to translate back to {original_language}: {e})"
+
+    # Parse JSON if present
+    try:
+        data = json.loads(ai)
+        if isinstance(data, dict):
+            formatted = []
+            for k, v in data.items():
+                v_str = ", ".join(str(x) for x in v) if isinstance(v, list) else str(v)
+                formatted.append(f"{k.replace('_',' ').title()}: {v_str}")
+            ai = "\n".join(formatted)
+    except Exception:
+        pass
+
+    # Build chat history
+    chat_history = [
+        {"type": "human", "content": m.content} if m.type == "human"
+        else {"type": "ai", "content": m.content}
+        for m in session.messages
+    ]
+
+    return ChatResponse(response=ai.strip(), chat_history=chat_history)
