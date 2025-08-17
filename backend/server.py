@@ -6,7 +6,8 @@ from typing import List, Dict, Any, Optional
 from langchain_core.messages import HumanMessage
 from agents.states import Session
 from krishimitra import KrishiMitra_pipeline
-
+import re
+import json
 # Import ASR pipeline
 from asr.asr import (
     transcribe_audio_with_detection,
@@ -62,13 +63,39 @@ def chat(req: ChatRequest):
     result = graph.invoke(session)
 
     ai_response = result.get("response", "No response")
+    
     chat_history = [
         {"type": "human", "content": m.content} if m.type == "human"
         else {"type": "ai", "content": m.content}
         for m in session.messages
     ]
+    match = re.search(r"chat_history=\[.*?content='(.*?)'\)", ai_response, re.DOTALL)
 
-    return ChatResponse(response=ai_response, chat_history=chat_history)
+    if match:
+        ai = match.group(1).replace("\\n", "\n")
+        print("AI Response:\n", ai_response)
+    else:
+        print("No AI response found")
+
+    try:
+        data = json.loads(ai)  # if it's valid JSON
+        if isinstance(data, dict):
+            # format dict into readable string
+            formatted = []
+            for k, v in data.items():
+                if isinstance(v, list):
+                    v_str = ", ".join(str(x) for x in v)
+                else:
+                    v_str = str(v)
+                formatted.append(f"{k.replace('_',' ').title()}: {v_str}")
+            ai = "\n".join(formatted)
+    except Exception:
+        # if not JSON, leave as is
+        pass
+
+    print("AI Response:\n", ai)
+
+    return ChatResponse(response=ai.strip(), chat_history=chat_history)
 
 
 # ===============================
