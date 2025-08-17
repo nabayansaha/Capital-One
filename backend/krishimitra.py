@@ -15,6 +15,7 @@ from agents.weather import get_weather_data
 from agents.policy import get_policy_data
 from agents.states import Session
 import re
+from utils.chat import invoke_llm_langchain
 
 logging.basicConfig(
     filename="KrishiMitra.log",
@@ -23,29 +24,52 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 def route_query(state: Session) -> Dict[str, Any]:
     """
-    Decide which agent should handle the query.
-    Returns a partial state update with 'next' set.
+    Ask LLM which agent should handle the query.
     """
     if not state.messages:
-        return {"next": "PolicyAgent"}  # safe fallback
+        return {"next": "FallbackAgent"}  # no input → fallback
 
-    last = state.messages[-1].content.lower()
+    system_prompt = """You are a router. 
+Decide which agent should handle the latest user query.
+Options: CropResearch, MarketAgent, WeatherAgent, PolicyAgent.
+If none clearly fits, return FallbackAgent.
+Return ONLY the agent name (no explanation)."""
 
-    if any(w in last for w in ["crop", "fertilizer", "yield", "paddy", "wheat", "sowing", "harvest"]):
-        nxt = "CropResearch"
-    elif any(w in last for w in ["price", "market", "sell", "msp", "buy", "mandi", "rates"]):
-        nxt = "MarketAgent"
-    elif any(w in last for w in ["weather", "rain", "temperature", "forecast", "humidity", "wind"]):
-        nxt = "WeatherAgent"
-    elif any(w in last for w in ["policy", "scheme", "subsidy", "government", "pm-kisan", "insurance"]):
-        nxt = "PolicyAgent"
-    else:
-        nxt = "PolicyAgent"
+    routing_messages = [
+        HumanMessage(content=system_prompt),
+        HumanMessage(content=f"User query: {state.messages[-1].content}")
+    ]
+
+    try:
+        msgs, _, _ = invoke_llm_langchain(routing_messages)
+        nxt = msgs[-1].content.strip()
+    except Exception as e:
+        logger.exception("Routing LLM failed, using fallback")
+        nxt = "FallbackAgent"
+
+    if nxt not in {"CropResearch", "MarketAgent", "WeatherAgent", "PolicyAgent", "FallbackAgent"}:
+        nxt = "FallbackAgent"
 
     logger.info(f"Routing to: {nxt}")
     return {"next": nxt}
+
+
+
+def fallback_node(state: Session) -> Dict[str, Any]:
+    """Fallback: directly call LLM if no other agent fits."""
+    try:
+        msgs, _, _ = invoke_llm_langchain(state.messages)
+        out = msgs[-1].content
+    except Exception as e:
+        logger.exception("Error in fallback_node")
+        out = f"FallbackAgent error: {e}"
+
+    msgs = list(state.messages) + [AIMessage(content=out)]
+    return {"response": out, "messages": msgs}
+
 
 def crop_node(state: Session) -> Dict[str, Any]:
     """Run crop research agent and append an AI message."""
@@ -98,17 +122,18 @@ def KrishiMitra_pipeline():
     builder.add_node("MarketAgent", market_node)
     builder.add_node("WeatherAgent", weather_node)
     builder.add_node("PolicyAgent", policy_node)
+    builder.add_node("FallbackAgent", fallback_node)  # NEW
 
-    # Edges
     builder.add_edge(START, "route_query")
     builder.add_conditional_edges(
         "route_query",
-        lambda s: s.next,  # <- reads 'next' from Session (not subscript)
+        lambda s: s.next,
         {
             "CropResearch": "CropResearch",
             "MarketAgent": "MarketAgent",
             "WeatherAgent": "WeatherAgent",
             "PolicyAgent": "PolicyAgent",
+            "FallbackAgent": "FallbackAgent",
         },
     )
 
@@ -116,30 +141,10 @@ def KrishiMitra_pipeline():
     builder.add_edge("MarketAgent", END)
     builder.add_edge("WeatherAgent", END)
     builder.add_edge("PolicyAgent", END)
+    builder.add_edge("FallbackAgent", END)
 
-    compiled_graph = builder.compile()
+    return builder.compile()
 
-    # Save graph images to assets/
-    try:
-        output_dir = "assets"
-        os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, "KM_graph.png")
-        graph_image = compiled_graph.get_graph().draw_mermaid_png(
-            curve_style=CurveStyle.LINEAR,
-            node_colors=NodeStyles(first="#ffdfba", last="#baffc9", default="#fad7de"),
-            wrap_label_n_words=9,
-            output_file_path=None,
-            draw_method=MermaidDrawMethod.PYPPETEER,
-            background_color="white",
-            padding=10,
-        )
-        with open(output_path, "wb") as f:
-            f.write(graph_image)
-        logger.info(f"Graph visualization saved to {output_path}")
-    except Exception as e:
-        logger.warning(f"Could not save graph visualization: {e}")
-
-    return compiled_graph
 
 def run_chatbot():
     graph = KrishiMitra_pipeline()

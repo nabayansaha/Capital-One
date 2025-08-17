@@ -253,6 +253,36 @@ def english_to_original_language(english_text: str, target_lang_code: Optional[s
     translated_text = translate_chunked_nllb(english_text, target_lang_code)
     return translated_text
 
+def text_to_english(text: str, lang_code: str) -> Dict[str, str]:
+    """
+    Convert text from a different language to English.
+    
+    Args:
+        text (str): The input text in its original language.
+        lang_code (str): Language code of the input text (e.g., 'hi', 'bn', 'ta', 'en').
+
+    Returns:
+        dict: {
+            "original_text": str,
+            "detected_lang": str,
+            "english_text": str
+        }
+    """
+    if not text:
+        return {"original_text": "", "detected_lang": lang_code or "unknown", "english_text": ""}
+
+    if lang_code in ["en", "unknown", None, ""]:
+        english_text = text
+    else:
+        english_text = translate_chunked_nllb_indic2en(text, lang_code)
+
+    return {
+        "original_text": text,
+        "detected_lang": lang_code or "en",
+        "english_text": english_text
+    }
+
+
 if __name__ == "__main__":
     # Example usage
     audio_path = "/Users/naba/Desktop/capital-one/backend/temp_user1_voice.wav"

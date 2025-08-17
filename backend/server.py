@@ -11,6 +11,7 @@ from agents.states import Session
 from krishimitra import KrishiMitra_pipeline
 from asr.asr import audio_to_english_transcript, english_to_original_language
 from utils.vision import ask_vlm  # VLM function
+from utils.chat import invoke_llm_langchain  # <-- refine query before graph
 
 # ===============================
 # Initialize FastAPI & Middleware
@@ -78,36 +79,49 @@ async def chat_dynamic(
     # ----------------------
     # Audio input -> ASR -> English -> Graph -> Original Language
     # ----------------------
-    if file and file.content_type.startswith("voice"):
-        # Save uploaded audio to a temp file
+    if file and file.content_type.startswith("audio"):
         audio_path = f"temp_{user_id}_{file.filename}"
         with open(audio_path, "wb") as f:
             f.write(await file.read())
 
-        # Transcribe
         asr_result = audio_to_english_transcript(audio_path)
-
-        # Clean up temp file
         os.remove(audio_path)
 
-        # Extract transcript and detected language
         message = asr_result["english_text"]
         detected_lang = asr_result["detected_lang"]
         if detected_lang and detected_lang != "en":
             original_language = detected_lang
 
-
     # ----------------------
-    # Text input -> Graph
+    # Text input -> Refine Query -> Graph
+    # ----------------------
+    # ----------------------
+    # Text input -> Refine Query -> Graph
     # ----------------------
     if message:
-        session.messages.append(HumanMessage(content=message))
+        try:
+            refine_prompt = HumanMessage(
+                content=f"Refine the following user query so it is clear and precise for an agricultural assistant:(don't change the language and don't add any explanation)\n\n{message}"
+            )
 
-    # Invoke KrishiMitra graph
+            refined_messages, in_tok, out_tok = invoke_llm_langchain([refine_prompt])
+
+            # Get the refined query (last AI message content)
+            refined_message = refined_messages[-1].content
+
+        except Exception as e:
+            refined_message = message + f"\n\n(Note: Query refinement failed: {e})"
+
+        # Save refined query to session
+        session.messages.append(HumanMessage(content=refined_message))
+
+
+    # ----------------------
+    # Run KrishiMitra Graph
+    # ----------------------
     result = graph.invoke(session)
     ai_response = result.get("response", "No response")
 
-    # Extract actual AI content if nested in chat_history
     match = re.search(r"chat_history=\[.*?content='(.*?)'\)", ai_response, re.DOTALL)
     if match:
         ai = match.group(1).replace("\\n", "\n")
@@ -121,7 +135,7 @@ async def chat_dynamic(
         except Exception as e:
             ai += f"\n\n(Note: Failed to translate back to {original_language}: {e})"
 
-    # Parse JSON if present
+    # Try parsing JSON-like responses
     try:
         data = json.loads(ai)
         if isinstance(data, dict):
