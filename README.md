@@ -1,7 +1,8 @@
 <div align="center">
   <img src="backend/assets/KrishiMitra.png" width="400">
   <h1>KrishiMitra</h1>
-  <p><strong>Agentic AI Solutions for Agricultural Intelligence and Decision Support</strong></p>
+  <p><strong>Agentic AI for Multi-Channel Agricultural Decision Support
+</strong></p>
 </div>
 
 <div align="center">
@@ -20,7 +21,7 @@ Built for the **Capital One Launchpad Hackathon 2025** - Theme: Exploring and Bu
 
 ## About
 
-KrishiMitra is an AI-driven multi-domain query and data processing platform that empowers farmers, suppliers, and agri-businesses with real-time, context-aware insights for better decision-making. The platform integrates diverse data sources through a unified ingestion pipeline and provides intelligent responses through specialized domain agents, addressing complex agricultural challenges with cutting-edge agentic AI solutions.
+KrishiMitra is an Al-Powered Multi-Channel Agricultural Decision Support, query and data processing platform that empowers farmers, suppliers, and agri-businesses with real-time, context-aware insights for better decision-making. The platform integrates diverse data sources through a unified ingestion pipeline and provides intelligent responses through specialized domain agents, addressing complex agricultural challenges with cutting-edge agentic AI solutions.
 
 > **Team**: Money Farmers - Aarya Pakhale, Nabayan Saha, Shamik Bhattacharjee, Anshul Trehan
 
@@ -65,9 +66,13 @@ KrishiMitra is an AI-driven multi-domain query and data processing platform that
    ```env
    MONGODB_URI=mongodb://localhost:27017/krishi_mitra
    GOOGLE_DRIVE_API_KEY=your_drive_api_key
-   WEATHER_API_KEY=your_weather_api_key
-   MARKET_API_KEY=your_market_api_key
-   OPENAI_API_KEY=your_openai_api_key
+   GOOGLE_MAPS_API_KEY = your_api_key
+   GROQ_API_KEY = your_api_key
+   TAVILY_API_KEY = your_api_key
+   HF_API_KEY= your_api_key
+   ASSEMBLYAI_API_KEY=your_api_key
+   NLLB_API_URL= http://localhost:7860
+   MOONDREAM_API_KEY = your_api_key
    ```
 
 7. Run the application:
