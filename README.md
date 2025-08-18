@@ -7,9 +7,9 @@
 
 <div align="center">
 
-[![GitHub stars](https://img.shields.io/github/stars/Capital-One/backend.svg?style=social&label=Star)](https://github.com/Capital-One/backend)
-[![GitHub forks](https://img.shields.io/github/forks/Capital-One/backend.svg?style=social&label=Fork)](https://github.com/Capital-One/backend/fork)
-[![GitHub watchers](https://img.shields.io/github/watchers/Capital-One/backend.svg?style=social&label=Watch)](https://github.com/Capital-One/backend)
+[![GitHub stars](https://img.shields.io/github/stars/Capital-One/backend.svg?style=social&label=Star)](https://github.com/nabayansaha/Capital-One)
+[![GitHub forks](https://img.shields.io/github/forks/Capital-One/backend.svg?style=social&label=Fork)](https://github.com/nabayansaha/Capital-One/fork)
+[![GitHub watchers](https://img.shields.io/github/watchers/Capital-One/backend.svg?style=social&label=Watch)](https://github.com/nabayansaha/Capital-One)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
