@@ -18,7 +18,7 @@
 
 ## Awards
 
-Winner at the **Capital One Launchpad Hackathon 2025** 🎉 - Theme: Exploring and Building Agentic AI Solutions for Agriculture
+Built for the **Capital One Launchpad Hackathon 2025** - Theme: Exploring and Building Agentic AI Solutions for Agriculture
 
 ## About
 
