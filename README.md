@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/Capital-One/backend/blob/main/assets/KrishiMitra.png" width="400">
+  <img src="https://github.com/Capital-One/backend/assets/KrishiMitra.png" width="400">
   <h1>KrishiMitra</h1>
   <p><strong>Agentic AI Solutions for Agricultural Intelligence and Decision Support</strong></p>
 </div>
