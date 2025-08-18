@@ -31,10 +31,13 @@ function App() {
     if (audioBlob) formData.append("file", audioBlob, "voice.wav");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/chat_dynamic", {
+      const baseUrl = window?.configs?.apiUrl || "http://127.0.0.1:8000";
+
+      const res = await fetch(`${baseUrl}/chat_dynamic`, {
         method: "POST",
         body: formData,
       });
+
       const data = await res.json();
 
       setMessages((prev) => [
