@@ -6,7 +6,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain_core.runnables.graph import CurveStyle, MermaidDrawMethod, NodeStyles
 from agents.schemas import TokenTracker, QAPair, Messages
 from agents.market import get_market_data
@@ -34,8 +34,9 @@ def route_query(state: Session) -> Dict[str, Any]:
 
     system_prompt = """You are a router. 
 Decide which agent should handle the latest user query.
-Options: CropResearch, MarketAgent, WeatherAgent, PolicyAgent.
-If none clearly fits, return FallbackAgent.
+Options: CropResearch, WeatherAgent, PolicyAgent.
+If none clearly fits, return FallbackAgent. for things like loan rates and stuff do fallback. also note that CropResearch proviedes data about a single crop in a given format so use it only when the user asks about a single crop by name.
+and WeatherAgent provides weather data for your current location so don't call it for questions like "What seed variety suits this unpredictable weather? use Fallback in that scenario".
 Return ONLY the agent name (no explanation)."""
 
     routing_messages = [
@@ -61,6 +62,8 @@ Return ONLY the agent name (no explanation)."""
 def fallback_node(state: Session) -> Dict[str, Any]:
     """Fallback: directly call LLM if no other agent fits."""
     try:
+        state.messages.append(
+            SystemMessage(content="Answer in the indian context, be concise and clear. also don't state your knowledge cutoff date."))
         msgs, _, _ = invoke_llm_langchain(state.messages)
         out = msgs[-1].content
     except Exception as e:

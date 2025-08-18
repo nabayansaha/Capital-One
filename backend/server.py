@@ -67,7 +67,7 @@ async def chat_dynamic(
         with open(img_path, "wb") as f:
             f.write(await file.read())
 
-        fixed_prompt = "Is there any anomalies in the shown crop and which crop is shown?"
+        fixed_prompt = "Tell me the name of the crop in the image and ,Is there any anomalies in the shown crop? format your answer as crop: <crop_name>, anomalies: <(which is the disease name)>."
         try:
             ai_response = ask_vlm(img_path, fixed_prompt)
         except Exception as e:
@@ -101,16 +101,17 @@ async def chat_dynamic(
     if message:
         try:
             refine_prompt = HumanMessage(
-                content=f"Refine the following user query so it is clear and precise for an agricultural assistant:(don't change the language and don't add any explanation)\n\n{message}"
+                content= message
             )
 
             refined_messages, in_tok, out_tok = invoke_llm_langchain([refine_prompt])
 
             # Get the refined query (last AI message content)
             refined_message = refined_messages[-1].content
+            refined_message = message
 
         except Exception as e:
-            refined_message = message + f"\n\n(Note: Query refinement failed: {e})"
+            refined_message = message 
 
         # Save refined query to session
         session.messages.append(HumanMessage(content=refined_message))
