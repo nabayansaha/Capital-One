@@ -1,3 +1,4 @@
+nllb @ git+https://github.com/winstxnhdw/nllb-api.git@dbf9ad781a21116983c5aba382969450146c3a98#subdirectory=client
 aiohappyeyeballs==2.6.1
 aiohttp==3.12.15
 aiosignal==1.4.0
@@ -170,13 +171,13 @@ pydantic-settings==2.10.1
 pydantic_core==2.33.2
 pydeck==0.9.1
 pydub==0.25.1
-pyee==8.2.2
+pyee==11.1.1
 Pygments==2.19.2
 PyMuPDF==1.26.3
 pyparsing==3.2.3
 pypdf==5.9.0
 PyPika==0.48.9
-pyppeteer==1.0.2
+pyppeteer==2.0.0
 pyproject_hooks==1.2.0
 pytesseract==0.3.13
 pytest==8.4.1
