@@ -118,7 +118,7 @@ llama-index-readers-file==0.4.6
 llama-index-readers-llama-parse==0.4.0
 llama-index-vector-stores-chroma==0.4.1
 llama-parse==0.6.4.post1
-llvmlite==0.43.0
+llvmlite>=0.42,<0.44
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 marshmallow==3.26.1
@@ -135,7 +135,7 @@ nest-asyncio==1.6.0
 networkx==3.2.1
 nllb @ git+https://github.com/winstxnhdw/nllb-api.git@dbf9ad781a21116983c5aba382969450146c3a98#subdirectory=client
 nltk==3.9.1
-numba==0.60.0
+numba>=0.59,<0.61
 numpy==1.26.4
 oauthlib==3.3.1
 onnxruntime==1.19.2
