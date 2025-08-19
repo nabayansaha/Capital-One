@@ -1,4 +1,4 @@
-nllb @ git+https://github.com/winstxnhdw/nllb-api.git@dbf9ad781a21116983c5aba382969450146c3a98#subdirectory=client
+nllb @ https://github.com/winstxnhdw/nllb-api/archive/dbf9ad781a21116983c5aba382969450146c3a98.tar.gz#subdirectory=client
 aiohappyeyeballs
 aiohttp
 aiosignal
