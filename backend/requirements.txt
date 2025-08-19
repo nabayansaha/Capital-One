@@ -131,7 +131,7 @@ mypy_extensions
 narwhals
 nest-asyncio
 networkx
-nllb
+nllb @ git+https://github.com/winstxnhdw/nllb-api.git@dbf9ad781a21116983c5aba382969450146c3a98#subdirectory=client
 nltk
 numba
 numpy
