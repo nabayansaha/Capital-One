@@ -176,7 +176,7 @@ PyMuPDF==1.26.3
 pyparsing==3.2.3
 pypdf==5.9.0
 PyPika==0.48.9
-pyppeteer==2.0.0
+pyppeteer==1.0.2
 pyproject_hooks==1.2.0
 pytesseract==0.3.13
 pytest==8.4.1
