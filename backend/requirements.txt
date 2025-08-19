@@ -170,7 +170,7 @@ pydantic-settings==2.10.1
 pydantic_core==2.33.2
 pydeck==0.9.1
 pydub==0.25.1
-pyee==11.1.1
+pyee
 Pygments==2.19.2
 PyMuPDF==1.26.3
 pyparsing==3.2.3
